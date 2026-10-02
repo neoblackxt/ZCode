@@ -188,6 +188,7 @@ import { persistAssistantTimelinePartForSession } from "./timeline-persistence.j
 import { generateWorkspaceText, testModelConnectivity } from "./workspace-generate-text.js";
 import { maybeStartGoalSummaryTitleGeneration } from "./goal-summary-title.js";
 import { maybeStartSessionTitleGenerationFromExternalInput } from "./session-title.js";
+import { freezeSessionTitleForAutomation } from "./session-title.js";
 import { setCustomSessionTitle } from "./session-title.js";
 import {
   drainMemoryExtractions,
@@ -213,6 +214,7 @@ export function installAgentRuntimeMethods(ctor: AgentRuntimeConstructor): void 
   proto.maybeStartSessionTitleGenerationFromExternalInput =
     maybeStartSessionTitleGenerationFromExternalInput;
   proto.setCustomSessionTitle = setCustomSessionTitle;
+  proto.freezeSessionTitleForAutomation = freezeSessionTitleForAutomation;
   proto.maybeStartGoalSummaryTitleGeneration = maybeStartGoalSummaryTitleGeneration;
   proto.testModelConnectivity = testModelConnectivity;
   proto.recordExternalUserPrompt = recordExternalUserPrompt;

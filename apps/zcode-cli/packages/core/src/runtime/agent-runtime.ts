@@ -365,6 +365,15 @@ export interface AgentRuntime {
   ): void;
   /** renameSession：用户显式重命名（titleSource=custom，发 SessionTitleUpdated）。 */
   setCustomSessionTitle(input: { title: string; traceContext: TraceContext }): Promise<void>;
+  /**
+   * CronCreate 冻结会话标题：仅在当前 titleSource 仍为 default/first_input（首轮标题
+   * sidecar 可能尚未写回）时把标题固定为 automation 标题；custom（用户手动命名）与
+   * generated（sidecar 已完成）不覆盖。
+   */
+  freezeSessionTitleForAutomation(input: {
+    title: string;
+    traceContext: TraceContext;
+  }): Promise<void>;
   maybeStartGoalSummaryTitleGeneration(
     input: string,
     targetID: string,

@@ -161,8 +161,10 @@ export function createProtocolAutomationPort(
         try {
           // 会话内 CronCreate 会在首轮回复中创建 automation，但首条消息触发的
           // session_title sidecar 可能迟到并根据助手解释生成标题，导致标题变成“我无法...”。
-          // CronCreate 成功后把当前会话标题固定为 automation 标题，阻止 generated 标题覆盖。
-          await activeSession.app.setCustomSessionTitle({
+          // 仅当标题仍处于 default/first_input（sidecar 可能尚未写回）时冻结为 automation
+          // 标题；custom（用户手动命名）与 generated（sidecar 已完成，后续轮次不会再有
+          // 标题生成）不覆盖——否则任务中途每次新增 automation 都会改写既有任务名。
+          await activeSession.app.runtime.freezeSessionTitleForAutomation({
             title,
             traceContext: activeSession.traceContext,
           });

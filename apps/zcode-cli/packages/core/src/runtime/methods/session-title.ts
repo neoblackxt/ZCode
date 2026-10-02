@@ -257,6 +257,34 @@ async function generateAndPersistSessionTitle(
 }
 
 /**
+ * CronCreate 后的会话标题冻结：仅当标题仍处于 sidecar 可能覆盖的初始状态时生效。
+ *
+ * 冻结的唯一目的是抢占首轮尚未写回的标题生成 sidecar（迟到的 generated 标题可能
+ * 根据助手解释生成“我无法...”之类的内容）。custom（用户手动命名）与 generated
+ * （sidecar 已完成，且 turnNumber>0 后不会再有新的标题生成——resume 会从历史消息
+ * 重建 turnNumber，不会归零）没有可保护的对象，此时覆盖只会改写既有任务名：任务
+ * 中途每次新增 automation（如逐阶段新增的定时巡检）都会把任务改成最新 automation
+ * 标题，破坏任务列表管理。因此这两种来源直接跳过冻结。
+ */
+export async function freezeSessionTitleForAutomation(
+  this: AgentRuntimeInternal,
+  input: { title: string; traceContext: TraceContext },
+): Promise<void> {
+  const session = await this.sessionStore?.getSession(this.sessionId);
+  if (!session) return;
+  if (session.titleSource !== "default" && session.titleSource !== "first_input") {
+    this.logger?.debug("Session title freeze skipped", {
+      ...traceContextToLogContext(input.traceContext),
+      event: "automation.session_title_freeze.skipped",
+      module: "core.runtime",
+      reason: `title_source_${session.titleSource}`,
+    });
+    return;
+  }
+  await setCustomSessionTitle.call(this, input);
+}
+
+/**
  * renameSession：用户显式重命名会话（titleSource=custom）。custom 之后自动标题
  * 生成会被跳过（见 persistGeneratedSessionTitle 的 custom_title 短路），持久化 + 发
  * SessionTitleUpdated(source:custom) 供 v4 投影 meta 更新。

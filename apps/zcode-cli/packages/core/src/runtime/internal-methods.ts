@@ -92,6 +92,10 @@ export interface AgentRuntimeCoreMethods {
     options?: { goalSummaryTargetID?: string; traceContext?: TraceContext },
   ): void;
   setCustomSessionTitle(input: { title: string; traceContext: TraceContext }): Promise<void>;
+  freezeSessionTitleForAutomation(input: {
+    title: string;
+    traceContext: TraceContext;
+  }): Promise<void>;
   recordUserInputAutoResolutionUpdate(
     input: UserInputAutoResolutionUpdatedPayload & { traceContext?: TraceContext },
   ): Promise<void>;
